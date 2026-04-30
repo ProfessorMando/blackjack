@@ -10,7 +10,7 @@ if (!app) throw new Error('App root not found');
 
 const menu = document.createElement('main');
 menu.className = 'menu';
-menu.innerHTML = `<section class="menu__panel"><h1 class="menu__title">Blackjack</h1><p class="menu__subtitle">Play locally in your browser</p><div class="menu__actions"><button class="btn btn--primary" data-action="solo">Play Solo</button><button class="btn btn--ghost menu__rules-btn" data-action="rules">How to Play</button></div></section><div class="offline-banner" hidden>Offline ready. Solo mode is available.</div>`;
+menu.innerHTML = `<section class="menu__panel"><h1 class="menu__title">Blackjack</h1><p class="menu__subtitle">Play locally in your browser</p><div class="menu__actions"><button class="btn btn--primary" data-action="solo">Player 1</button><button class="btn btn--secondary" data-action="online">Player 2 / Online</button><button class="btn btn--ghost menu__rules-btn" data-action="rules">How to Play</button></div></section><div class="offline-banner" hidden>Offline ready. Solo mode is available.</div>`;
 app.append(menu);
 
 function openSolo(): void {
@@ -29,9 +29,21 @@ function openSolo(): void {
   document.body.append(createModal('Solo Setup', settings));
 }
 
+function openTableForMode(mode: 'solo' | 'online'): void {
+  const state = createAppState({
+    role: 'player',
+    startingCash: loadNumber(STORAGE_KEYS.startingCash, 500),
+    bet: 10,
+    difficulty: 'casual'
+  });
+  app.innerHTML = '';
+  app.append(renderGameBoard(state, () => window.location.reload(), mode));
+}
+
 menu.addEventListener('click', (event) => {
   const action = (event.target as HTMLElement).getAttribute('data-action');
-  if (action === 'solo') openSolo();
+  if (action === 'solo') openTableForMode('solo');
+  if (action === 'online') openTableForMode('online');
   if (action === 'rules') {
     const rules = document.createElement('div');
     rules.className = 'rules-content';
