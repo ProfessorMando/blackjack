@@ -20,7 +20,7 @@ export function renderPayout(status: { label: string; delta: number } | null): H
   return el;
 }
 
-export function renderBetChips(bankroll: number, selectedChips: number[], onSelect: (chips: number[]) => void, onDeal?: () => void): HTMLElement {
+export function renderBetChips(bankroll: number, selectedChips: number[], onSelect: (chips: number[]) => void): HTMLElement {
   const wrap = document.createElement('section');
   wrap.className = 'betting';
   wrap.innerHTML = '<h3>Place Your Bet</h3>';
@@ -52,7 +52,7 @@ export function renderBetChips(bankroll: number, selectedChips: number[], onSele
   Object.entries(grouped).forEach(([value, count]) => {
     const stack = document.createElement('button');
     const idx = CHIP_VALUES.indexOf(Number(value) as (typeof CHIP_VALUES)[number]);
-    stack.className = `chip-stack${count > 2 ? ' chip-stack--stacked' : ''}`;
+    stack.className = 'chip-stack';
     stack.style.setProperty('--chip-color', CHIP_COLORS[idx]);
     stack.style.setProperty('--chip-text', CHIP_TEXT[idx]);
     stack.innerHTML = `<span class="chip-stack__value">${value}</span><span class="chip-stack__count">x${count}</span>`;
@@ -74,13 +74,5 @@ export function renderBetChips(bankroll: number, selectedChips: number[], onSele
   total.textContent = `Bet: ${selected}`;
 
   wrap.append(row, center, total);
-  if (onDeal) {
-    const dealBtn = document.createElement('button');
-    dealBtn.className = 'btn btn--primary betting__deal';
-    dealBtn.textContent = 'Deal';
-    dealBtn.disabled = selected < 1 || selected > bankroll;
-    dealBtn.addEventListener('click', onDeal);
-    wrap.append(dealBtn);
-  }
   return wrap;
 }

@@ -1,8 +1,7 @@
-const actions = ['deal','hit','stand','double','split','surrender'] as const;
+const actions = ['hit','stand','double','split','surrender'] as const;
 export type ControlAction = (typeof actions)[number];
 
 const LABELS: Record<ControlAction, string> = {
-  deal: 'Deal',
   hit: 'Hit',
   stand: 'Stand',
   double: 'Double',
