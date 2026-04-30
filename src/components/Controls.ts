@@ -1,5 +1,16 @@
-export function renderControls(): HTMLElement {
+const actions = ['deal','hit','stand','double','split','surrender','next-round','quit'] as const;
+export type ControlAction = (typeof actions)[number];
+
+export function renderControls(onAction: (action: ControlAction) => void, enabled: Partial<Record<ControlAction, boolean>>): HTMLElement {
   const wrap = document.createElement('div');
-  ['Deal','Hit','Stand','Double','Split'].forEach((label)=>{const b=document.createElement('button');b.className='btn btn--primary';b.textContent=label;wrap.append(b);});
+  wrap.className = 'controls';
+  for (const action of actions) {
+    const b = document.createElement('button');
+    b.className = 'btn btn--secondary';
+    b.textContent = action.replace('-', ' ');
+    b.disabled = !enabled[action];
+    b.addEventListener('click', () => onAction(action));
+    wrap.append(b);
+  }
   return wrap;
 }
