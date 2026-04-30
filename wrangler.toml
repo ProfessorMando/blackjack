@@ -1,4 +1,4 @@
-name = "blackjack-worker"
+name = "blackjack"
 main = "worker/index.ts"
 compatibility_date = "2024-11-01"
 
@@ -12,7 +12,7 @@ class_name = "GameRoom"
 
 [[migrations]]
 tag = "v1"
-new_classes = ["Matchmaker", "GameRoom"]
+new_sqlite_classes = ["Matchmaker", "GameRoom"]
 
 [vars]
 ENVIRONMENT = "production"
