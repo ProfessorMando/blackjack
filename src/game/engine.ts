@@ -42,7 +42,8 @@ export function legalActions(state: RoundState): PlayerAction[] {
 export function applyAction(state: RoundState, action: PlayerAction): RoundState {
   let next = { ...state, hands: state.hands.map((h)=>({...h,cards:[...h.cards]})), dealer:[...state.dealer] };
   const h = next.hands[next.currentHand];
-  if (action==='hit' || action==='double') { let c; [c,next.shoe]=drawCard(next.shoe); h.cards.push(c); if (action==='double'){h.bet*=2; next.bankroll -= h.bet/2; h.doubled=true; h.stood=true;} const total = handTotals(h.cards).total; if (total>21) h.busted=true; if (total===21) h.stood=true; }
+  if (action==='hit') { let c; [c,next.shoe]=drawCard(next.shoe); h.cards.push(c); const total = handTotals(h.cards).total; if (total>21) h.busted=true; if (total===21) h.stood=true; }
+  if (action==='double') { h.bet*=2; next.bankroll -= h.bet/2; h.doubled=true; }
   if (action==='stand') h.stood=true;
   if (action==='surrender') { h.surrendered=true; h.stood=true; }
   if (action==='split') { const [a,b]=h.cards; let c1,c2; [c1,next.shoe]=drawCard(next.shoe); [c2,next.shoe]=drawCard(next.shoe); h.cards=[a,c1]; const splitHand: PlayerHand={cards:[b,c2],bet:h.bet,splitAces:a.rank==='A'}; next.hands.splice(next.currentHand+1,0,splitHand); next.bankroll -= h.bet; }
