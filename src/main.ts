@@ -13,10 +13,10 @@ menu.className = 'menu';
 menu.innerHTML = `<section class="menu__panel"><h1 class="menu__title">Blackjack</h1><p class="menu__subtitle">Play Locally in Your Browser</p><div class="menu__actions"><button class="btn btn--primary" data-action="solo">Play</button><button class="btn btn--ghost menu__rules-btn" data-action="rules">How to Play</button></div></section>`;
 app.append(menu);
 
-function openTable(): void {
+function openTable(startingCash: number): void {
   const state = createAppState({
     role: 'player',
-    startingCash: loadNumber(STORAGE_KEYS.startingCash, 500),
+    startingCash,
     bet: 10,
     difficulty: 'casual'
   });
@@ -24,9 +24,43 @@ function openTable(): void {
   app.append(renderGameBoard(state, () => window.location.reload()));
 }
 
+function openStartAmountPrompt(): void {
+  const panel = document.createElement('div');
+  panel.innerHTML = '<p>Choose starting cash (1 - 100000)</p><input type="number" min="1" max="100000" value="500" class="start-cash-input" /><div class="menu__actions"><button class="btn btn--primary" data-start-new>Start New Run</button></div>';
+  const modal = createModal('New Run', panel);
+  panel.querySelector('[data-start-new]')?.addEventListener('click', () => {
+    const input = panel.querySelector('.start-cash-input') as HTMLInputElement;
+    const amount = Math.max(1, Math.min(100000, Math.floor(Number(input.value) || 500)));
+    document.body.removeChild(modal);
+    openTable(amount);
+  });
+  document.body.append(modal);
+}
+
+function openPlayChoice(): void {
+  const hasSavedRun = localStorage.getItem(STORAGE_KEYS.hasSavedRun) === '1';
+  if (!hasSavedRun) {
+    openStartAmountPrompt();
+    return;
+  }
+  const bankroll = loadNumber(STORAGE_KEYS.bankroll, 500);
+  const panel = document.createElement('div');
+  panel.innerHTML = `<p>You have an existing run with <strong>${bankroll}</strong> remaining.</p><div class="menu__actions"><button class="btn btn--primary" data-continue>Continue Last Run</button><button class="btn btn--ghost" data-new>Start New Run</button></div>`;
+  const modal = createModal('Choose Run', panel);
+  panel.querySelector('[data-continue]')?.addEventListener('click', () => {
+    document.body.removeChild(modal);
+    openTable(bankroll);
+  });
+  panel.querySelector('[data-new]')?.addEventListener('click', () => {
+    document.body.removeChild(modal);
+    openStartAmountPrompt();
+  });
+  document.body.append(modal);
+}
+
 menu.addEventListener('click', (event) => {
   const action = (event.target as HTMLElement).getAttribute('data-action');
-  if (action === 'solo') openTable();
+  if (action === 'solo') openPlayChoice();
   if (action === 'rules') {
     const rules = document.createElement('div');
     rules.className = 'rules-content';
