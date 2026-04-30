@@ -1,4 +1,4 @@
-const CHIP_VALUES = [1, 5, 10, 20, 50, 100, 500, 1000, 2000, 5000, 10000] as const;
+const CHIP_VALUES = [1, 5, 10, 20, 50, 100, 500] as const;
 
 const CHIP_COLORS = ['#f5f5f5', '#d32f2f', '#1976d2', '#43a047', '#8e24aa', '#fb8c00', '#6d4c41', '#00897b', '#5e35b1', '#c62828', '#212121'] as const;
 const CHIP_TEXT = ['#1a1a1a', '#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffffff'] as const;
@@ -30,7 +30,8 @@ export function renderBetChips(bankroll: number, selectedChips: number[], onSele
 
   CHIP_VALUES.forEach((value, idx) => {
     const b = document.createElement('button');
-    b.className = 'betting-chip';
+    const isSelected = selectedChips.includes(value);
+    b.className = `chip-button ${isSelected ? 'selected' : ''}`;
     b.style.setProperty('--chip-color', CHIP_COLORS[idx]);
     b.style.setProperty('--chip-text', CHIP_TEXT[idx]);
     b.textContent = String(value);

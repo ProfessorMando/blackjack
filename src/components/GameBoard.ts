@@ -8,6 +8,8 @@ import { renderBetChips, renderPayout, renderPurse } from './Chip';
 export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElement {
   const root = document.createElement('section');
   root.className = 'blackjack-page';
+  let showRoundSummary = false;
+  let roundSummaryTimer: number | null = null;
 
   const draw = (): void => {
     root.innerHTML = '';
@@ -70,17 +72,36 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
         return;
       }
       if (round.phase === 'round-over' && state.bankroll >= 1) {
-        state.awaitingNextRound = true;
+        if (!state.awaitingNextRound) {
+          state.awaitingNextRound = true;
+          showRoundSummary = true;
+          if (roundSummaryTimer) window.clearTimeout(roundSummaryTimer);
+          roundSummaryTimer = window.setTimeout(() => {
+            showRoundSummary = false;
+            draw();
+          }, 2000);
+        }
         const overlay = document.createElement('div');
-        overlay.className = 'round-overlay';
+        overlay.className = `round-overlay ${showRoundSummary ? 'is-visible' : ''}`;
         const delta = state.lastPayout?.delta ?? 0;
         const label = delta > 0 ? `You won ${delta}` : delta < 0 ? `You lost ${Math.abs(delta)}` : 'Push';
         overlay.innerHTML = `<div class="round-overlay__panel"><h3>Round complete</h3><p>${label}</p></div>`;
         const next = document.createElement('button');
-        next.className = 'btn btn--primary next-round-overlay';
+        next.className = 'btn btn--primary next-round-overlay page-primary-cta';
         next.innerHTML = 'Next Round <span class="next-round-overlay__arrow">⟶</span>';
-        next.addEventListener('click', () => { state.round = null; state.lastPayout = null; state.awaitingNextRound = false; draw(); });
-        root.append(overlay, next);
+        next.addEventListener('click', () => {
+          showRoundSummary = false;
+          if (roundSummaryTimer) window.clearTimeout(roundSummaryTimer);
+          roundSummaryTimer = null;
+          state.round = null;
+          state.lastPayout = null;
+          state.awaitingNextRound = false;
+          draw();
+        });
+        const dock = document.createElement('div');
+        dock.className = 'bottom-control-dock';
+        dock.append(next);
+        root.append(overlay, dock);
 
         const playerMade21 = round.hands.some((h) => handTotals(h.cards).total === 21);
         const dealerMade21 = handTotals(round.dealer).total === 21;
@@ -103,8 +124,8 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
         draw();
       }));
       const next = document.createElement('button');
-      next.className = 'btn btn--primary next-round-overlay';
-      next.textContent = 'Next Round';
+      next.className = 'btn btn--primary next-round-overlay page-primary-cta';
+      next.textContent = 'Deal';
       next.disabled = state.selectedChips.length === 0 || state.currentBet > state.bankroll;
       next.addEventListener('click', () => {
         const betTotal = state.selectedChips.reduce((sum, chip) => sum + chip, 0);
@@ -116,7 +137,10 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
       const purseWrap = document.createElement('div');
       purseWrap.className = 'purse-wrap';
       purseWrap.append(renderPurse(state.bankroll));
-      root.append(purseWrap, next);
+      const dock = document.createElement('div');
+      dock.className = 'bottom-control-dock';
+      dock.append(next);
+      root.append(purseWrap, dock);
     }
 
     const nextRoundButton = root.querySelector('.next-round-overlay') as HTMLButtonElement | null;
