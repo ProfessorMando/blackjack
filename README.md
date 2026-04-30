@@ -1,91 +1,56 @@
-# Blackjack Web Application (Scaffold)
+# Blackjack (Vanilla TypeScript + Vite + Cloudflare Workers)
 
-This repository contains an initial scaffold for a Blackjack web application using Vanilla TypeScript + Vite for the frontend and Cloudflare Workers + Durable Objects for online features.
+## Overview
+This repository contains a Blackjack web app scaffold with implemented core game primitives:
+- typed card/deck/shoe model
+- deterministic dealer behavior helper
+- baseline player decision AI with spot-checked strategy behaviors
+- core round engine transitions (deal, actions, dealer play, settlement)
+- Cloudflare Worker + Durable Object scaffold for online features
 
-## Status
-
-Core Blackjack rule logic is intentionally not implemented yet.
-
-- `src/game/engine.ts`: placeholder
-- `src/game/ai.ts`: placeholder
-
-Both are blocked pending a formal rules specification.
-
-## Local Development
-
+## Local setup
 ```bash
 npm install
 npm run dev
 ```
 
-Type-check:
+## Scripts
+- `npm run dev` - Vite dev server
+- `npm run build` - production build
+- `npm run preview` - preview build
+- `npm run typecheck` - TypeScript check
+- `npm run test` - Vitest
+- `npm run worker:dev` - local worker
+- `npm run worker:deploy` - deploy worker
 
-```bash
-npm run typecheck
-```
+## Rules configuration
+Default rules are centralized in `src/game/engine.ts` as `DEFAULT_RULES`:
+- 6 decks
+- blackjack payout 3:2
+- dealer hits soft 17
+- min bet 10
+- max split hands 4
+- late surrender enabled
 
-Build frontend:
+## Persistence keys
+- `blackjack.theme`
+- `blackjack.bankroll`
+- `blackjack.startingCash`
 
-```bash
-npm run build
-```
-
-## Cloudflare Deployment
-
-### Frontend (Cloudflare Pages)
-
+## Cloudflare
+### Pages
 - Build command: `npm run build`
 - Output directory: `dist`
 
-### Worker (Cloudflare Workers)
+### Worker
+Configured in `wrangler.toml` with:
+- `main = "worker/index.ts"`
+- Durable Objects: `MATCHMAKER`, `GAME_ROOM`
+- `ENVIRONMENT = "production"`
 
-Worker configuration is in `wrangler.toml`.
-
-Deploy:
-
+## Testing
 ```bash
-npm run worker:deploy
+npm run typecheck
+npm run test
+npm run build
 ```
-
-Run locally:
-
-```bash
-npm run worker:dev
-```
-
-## Environment Variables
-
-Defined in `wrangler.toml`:
-
-- `ENVIRONMENT=production`
-
-Add additional worker variables/secrets via Wrangler or the Cloudflare dashboard.
-
-## Persistence via localStorage
-
-The scaffold currently persists:
-
-- Theme preference (`blackjack.theme`)
-- Bankroll value (`blackjack.bankroll`)
-- Starting cash key reserved for next implementation step
-
-## Service Worker / Offline
-
-A minimal service worker is provided to enable app-shell caching and network-only handling for `/api/*` requests.
-
-- Source scaffold: `src/sw.ts`
-- Registered file: `public/sw.js`
-
-## Project Structure
-
-See the source tree under:
-
-- `src/` frontend app and modules
-- `worker/` Cloudflare Worker + Durable Objects
-
-## Next Steps
-
-1. Add full game rules specification.
-2. Implement `engine.ts` and `ai.ts` from that spec.
-3. Complete online queue/game room protocols.
-4. Expand tests and Lighthouse optimization pass.
