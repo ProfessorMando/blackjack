@@ -23,6 +23,8 @@ export interface AppState {
   bankroll: number;
   minBet: number;
   currentBet: number;
+  selectedChips: number[];
+  lastPayout: { label: string; delta: number } | null;
   role: SoloRole;
   difficulty: Difficulty;
 }
@@ -46,20 +48,23 @@ export function createAppState(config: SoloConfig): AppState {
   localStorage.setItem(STORAGE_KEYS.startingCash, String(config.startingCash));
   const bankroll = Math.max(config.startingCash, config.bet);
   saveBankroll(bankroll);
-  return { round: null, bankroll, minBet: 1, currentBet: config.bet, role: config.role, difficulty: config.difficulty };
+  return { round: null, bankroll, minBet: 1, currentBet: config.bet, selectedChips: [config.bet], lastPayout: null, role: config.role, difficulty: config.difficulty };
 }
 
 export function startRound(state: AppState, bet: number): AppState {
   const round = dealInitial(createRound(state.bankroll, bet));
-  return { ...state, bankroll: round.bankroll, round, currentBet: bet };
+  return { ...state, bankroll: round.bankroll, round, currentBet: bet, lastPayout: null };
 }
 
 export function applyPlayerAction(state: AppState, action: PlayerAction): AppState {
   if (!state.round) return state;
+  const before = state.bankroll;
   let round = applyAction(state.round, action);
   if (round.phase === 'dealer') round = playDealer(round);
   saveBankroll(round.bankroll);
-  return { ...state, round, bankroll: round.bankroll };
+  const delta = round.phase === 'round-over' ? round.bankroll - before : 0;
+  const label = delta > 0 ? 'win' : delta < 0 ? 'loss' : 'push';
+  return { ...state, round, bankroll: round.bankroll, lastPayout: round.phase === 'round-over' ? { label, delta } : state.lastPayout };
 }
 
 export function runComputerTurn(state: AppState): AppState {

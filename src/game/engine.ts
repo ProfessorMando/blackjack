@@ -18,8 +18,8 @@ export function dealInitial(state: RoundState): RoundState {
     let card; [card, next.shoe] = drawCard(next.shoe); next.hands[0].cards = [...next.hands[0].cards, card];
     [card, next.shoe] = drawCard(next.shoe); next.dealer = [...next.dealer, card];
   }
-  const upcardAce = next.dealer[0]?.rank === 'A';
-  next.phase = upcardAce ? 'insurance' : 'player';
+  // Insurance flow is not implemented in the UI; always continue to player actions.
+  next.phase = 'player';
   return next;
 }
 
