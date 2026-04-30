@@ -27,11 +27,13 @@ export interface AppState {
   lastPayout: { label: string; delta: number } | null;
   role: SoloRole;
   difficulty: Difficulty;
+  awaitingNextRound: boolean;
 }
 
 export const STORAGE_KEYS = {
   bankroll: 'blackjack.bankroll',
-  startingCash: 'blackjack.startingCash'
+  startingCash: 'blackjack.startingCash',
+  hasSavedRun: 'blackjack.hasSavedRun'
 } as const;
 
 export function loadNumber(key: string, fallback: number): number {
@@ -42,13 +44,14 @@ export function loadNumber(key: string, fallback: number): number {
 
 export function saveBankroll(amount: number): void {
   localStorage.setItem(STORAGE_KEYS.bankroll, String(Math.max(0, Math.floor(amount))));
+  localStorage.setItem(STORAGE_KEYS.hasSavedRun, '1');
 }
 
 export function createAppState(config: SoloConfig): AppState {
   localStorage.setItem(STORAGE_KEYS.startingCash, String(config.startingCash));
   const bankroll = Math.max(config.startingCash, config.bet);
   saveBankroll(bankroll);
-  return { round: null, bankroll, minBet: 1, currentBet: config.bet, selectedChips: [config.bet], lastPayout: null, role: config.role, difficulty: config.difficulty };
+  return { round: null, bankroll, minBet: 1, currentBet: config.bet, selectedChips: [config.bet], lastPayout: null, role: config.role, difficulty: config.difficulty, awaitingNextRound: false };
 }
 
 export function startRound(state: AppState, bet: number): AppState {

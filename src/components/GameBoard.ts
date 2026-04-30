@@ -33,26 +33,26 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
       const enabled = {
         deal: false, hit: legal.includes('hit'), stand: legal.includes('stand'), double: legal.includes('double'), split: legal.includes('split'), surrender: legal.includes('surrender')
       };
-      const controls = renderControls((action: ControlAction) => {
-        Object.assign(state, applyPlayerAction(state, action as any));
-        draw();
-      }, enabled);
       const purseWrap = document.createElement('div');
       purseWrap.className = 'purse-wrap';
       purseWrap.append(renderPurse(state.bankroll), renderPayout(state.lastPayout));
-      root.append(dealerZone, playerZone, purseWrap, controls);
-      if (round.phase === 'round-over' && state.bankroll >= 1) {
-        root.append(renderBetChips(state.bankroll, state.selectedChips, (chips) => {
-          state.selectedChips = chips;
-          state.currentBet = chips.reduce((sum, chip) => sum + chip, 0);
+      root.append(dealerZone, playerZone, purseWrap);
+      if (round.phase === 'player') {
+        const controls = renderControls((action: ControlAction) => {
+          Object.assign(state, applyPlayerAction(state, action as any));
           draw();
-        }));
+        }, enabled);
+        root.append(controls);
+      }
+      if (round.phase === 'round-over' && state.bankroll >= 1) {
+        state.awaitingNextRound = true;
         const next = document.createElement('button');
         next.className = 'btn btn--primary next-round-overlay';
         next.innerHTML = 'Next Round <span class="next-round-overlay__arrow">⟶</span>';
-        next.disabled = state.currentBet < state.minBet || state.currentBet > state.bankroll;
         next.addEventListener('click', () => {
-          Object.assign(state, startRound(state, state.currentBet));
+          state.round = null;
+          state.lastPayout = null;
+          state.awaitingNextRound = false;
           draw();
         });
         root.append(next);
@@ -62,17 +62,14 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
         state.selectedChips = chips;
         state.currentBet = chips.reduce((sum, chip) => sum + chip, 0);
         draw();
+      }, () => {
+        Object.assign(state, startRound(state, state.currentBet));
+        draw();
       }));
-      const c = renderControls((action) => {
-        if (action === 'deal') {
-          Object.assign(state, startRound(state, state.currentBet));
-          draw();
-        }
-      }, { deal: state.currentBet <= state.bankroll });
       const purseWrap = document.createElement('div');
       purseWrap.className = 'purse-wrap';
       purseWrap.append(renderPurse(state.bankroll), renderPayout(state.lastPayout));
-      root.append(dealerZone, playerZone, purseWrap, c);
+      root.append(dealerZone, playerZone, purseWrap);
     }
   };
   draw();
