@@ -13,10 +13,10 @@ export function renderControls(onAction: (action: ControlAction) => void, enable
   const wrap = document.createElement('div');
   wrap.className = 'controls controls--bottom';
   for (const action of actions) {
+    if (!enabled[action]) continue;
     const b = document.createElement('button');
     b.className = 'btn btn--secondary';
     b.textContent = LABELS[action];
-    b.disabled = !enabled[action];
     b.addEventListener('click', () => onAction(action));
     wrap.append(b);
   }

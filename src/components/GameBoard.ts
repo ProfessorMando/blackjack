@@ -29,7 +29,7 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
     if (round) {
       dealerZone.append(renderHand(round.dealer, { label: 'Dealer', hiddenSecond: round.dealerHidden }));
       playerZone.style.setProperty('--hand-count', String(Math.max(1, Math.min(4, round.hands.length))));
-      round.hands.forEach((h, idx) => playerZone.append(renderHand(h.cards, { label: `Player ${idx + 1}`, active: idx === round.currentHand })));
+      round.hands.forEach((h, idx) => playerZone.append(renderHand(h.cards, { label: `Player ${idx + 1}`, active: idx === round.currentHand, bet: h.bet })));
       const legal = round.phase === 'player' ? legalActions(round) : [];
       const playerHasNatural = round.hands.some((h) => isBlackjack(h.cards) || handTotals(h.cards).total === 21);
       const enabled = {
@@ -70,7 +70,9 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
         next.addEventListener('click', () => { state.round = null; state.lastPayout = null; state.awaitingNextRound = false; draw(); });
         root.append(overlay, next);
 
-        const playerOnlyBlackjack = round.hands.some((h) => isBlackjack(h.cards)) && !isBlackjack(round.dealer);
+        const playerMade21 = round.hands.some((h) => handTotals(h.cards).total === 21);
+        const dealerMade21 = handTotals(round.dealer).total === 21;
+        const playerOnlyBlackjack = (round.hands.some((h) => isBlackjack(h.cards)) || playerMade21) && !dealerMade21;
         if (playerOnlyBlackjack) {
           const bj = document.createElement('div');
           bj.className = 'blackjack-overlay';
