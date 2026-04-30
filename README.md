@@ -11,10 +11,18 @@ Vanilla TypeScript + Vite Blackjack app with solo play, offline support, and a C
 - Online lobby scaffold with queue status/join endpoints and room WebSocket relay.
 
 ## Local development
-```bash
-npm install
-npm run dev
-```
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Start Vite:
+   ```bash
+   npm run dev
+   ```
+3. Open the URL printed by Vite (usually `http://localhost:5173` or `http://127.0.0.1:5173`).
+
+Do **not** open `index.html` directly from the filesystem (`file://...`). This project uses TypeScript modules (`/src/main.ts`) that must be compiled/served by Vite.
 
 ## Scripts
 - `npm run dev`
@@ -38,6 +46,13 @@ Rules live in `src/game/engine.ts` (`DEFAULT_RULES`). Update that object to chan
 `public/sw.js` caches app shell and static assets cache-first and uses network-only behavior for `/api/*`.
 
 ## Deployment
+Build for production before deploying:
+```bash
+npm run build
+```
+
+Deploy the generated `dist` folder.
+
 ### Cloudflare Pages
 - Build command: `npm run build`
 - Output directory: `dist`
