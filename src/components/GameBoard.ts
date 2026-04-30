@@ -30,6 +30,11 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
       dealerZone.append(renderHand(round.dealer, { label: 'Dealer', hiddenSecond: round.dealerHidden }));
       playerZone.style.setProperty('--hand-count', String(Math.max(1, Math.min(4, round.hands.length))));
       round.hands.forEach((h, idx) => playerZone.append(renderHand(h.cards, { label: `Player ${idx + 1}`, active: idx === round.currentHand, bet: h.bet })));
+      const tableBet = document.createElement('div');
+      tableBet.className = 'table-bet-summary';
+      const chipCount = state.selectedChips.length;
+      tableBet.innerHTML = `<p class="table-bet-summary__amount">Table Bet: ${round.bet}</p><p class="table-bet-summary__chips">Chips on table: ${chipCount}</p>`;
+      playerZone.append(tableBet);
       const legal = round.phase === 'player' ? legalActions(round) : [];
       const playerHasNatural = round.hands.some((h) => isBlackjack(h.cards) || handTotals(h.cards).total === 21);
       const enabled = {
