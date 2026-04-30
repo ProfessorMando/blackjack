@@ -3,7 +3,6 @@ import './styles/base.css';
 import './styles/components.css';
 import { createModal } from './components/Modal';
 import { renderGameBoard } from './components/GameBoard';
-import { renderLobby } from './online/lobby';
 import { createAppState, loadNumber, STORAGE_KEYS, type SoloConfig } from './game/state';
 
 const app = document.querySelector<HTMLDivElement>('#app');
@@ -11,7 +10,7 @@ if (!app) throw new Error('App root not found');
 
 const menu = document.createElement('main');
 menu.className = 'menu';
-menu.innerHTML = `<section class="menu__panel"><h1 class="menu__title">Blackjack</h1><p class="menu__subtitle">Play solo or go online</p><div class="menu__actions"><button class="btn btn--primary" data-action="solo">Play Solo</button><button class="btn btn--secondary" data-action="online">Play Online</button><button class="btn btn--ghost menu__rules-btn" data-action="rules">How to Play</button></div></section><div class="offline-banner" hidden>You are offline. Solo mode is available.</div>`;
+menu.innerHTML = `<section class="menu__panel"><h1 class="menu__title">Blackjack</h1><p class="menu__subtitle">Play locally in your browser</p><div class="menu__actions"><button class="btn btn--primary" data-action="solo">Play Solo</button><button class="btn btn--ghost menu__rules-btn" data-action="rules">How to Play</button></div></section><div class="offline-banner" hidden>Offline ready. Solo mode is available.</div>`;
 app.append(menu);
 
 function openSolo(): void {
@@ -33,7 +32,6 @@ function openSolo(): void {
 menu.addEventListener('click', (event) => {
   const action = (event.target as HTMLElement).getAttribute('data-action');
   if (action === 'solo') openSolo();
-  if (action === 'online') document.body.append(createModal('Online Lobby', renderLobby()));
   if (action === 'rules') {
     const rules = document.createElement('div');
     rules.className = 'rules-content';
@@ -56,8 +54,6 @@ menu.addEventListener('click', (event) => {
 });
 
 const offlineBanner = menu.querySelector('.offline-banner') as HTMLElement;
-window.addEventListener('online', () => offlineBanner.hidden = true);
-window.addEventListener('offline', () => offlineBanner.hidden = false);
-offlineBanner.hidden = navigator.onLine;
+offlineBanner.hidden = false;
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => undefined);
