@@ -1,15 +1,20 @@
-const CACHE = 'blackjack-v1';
-const APP_SHELL = ['/', '/index.html'];
-
+const CACHE = 'blackjack-v2';
 self.addEventListener('install', (event) => {
-  (event as ExtendableEvent).waitUntil(caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)));
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(['/', '/index.html'])));
 });
-
+self.addEventListener('activate', (event) => {
+  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))));
+});
 self.addEventListener('fetch', (event) => {
-  const fetchEvent = event as FetchEvent;
-  if (fetchEvent.request.url.includes('/api/')) {
-    fetchEvent.respondWith(fetch(fetchEvent.request));
+  const req = event.request;
+  const url = new URL(req.url);
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(req));
     return;
   }
-  fetchEvent.respondWith(caches.match(fetchEvent.request).then((hit) => hit ?? fetch(fetchEvent.request)));
+  event.respondWith(caches.match(req).then((hit) => hit || fetch(req).then((res) => {
+    const copy = res.clone();
+    caches.open(CACHE).then((cache) => cache.put(req, copy));
+    return res;
+  })));
 });
