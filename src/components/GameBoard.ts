@@ -8,6 +8,24 @@ import { renderBetChips, renderPayout, renderPurse } from './Chip';
 export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElement {
   const root = document.createElement('section');
   root.className = 'blackjack-page';
+  const RESULT_OVERLAY_MS = 2500;
+  let roundResultTimeout: ReturnType<typeof setTimeout> | null = null;
+  let activeRoundResultKey: string | null = null;
+
+  const clearRoundResultTimeout = (): void => {
+    if (roundResultTimeout) {
+      clearTimeout(roundResultTimeout);
+      roundResultTimeout = null;
+    }
+  };
+
+  const dismissRoundResult = (): void => {
+    clearRoundResultTimeout();
+    state.round = null;
+    state.lastPayout = null;
+    state.awaitingNextRound = false;
+    draw();
+  };
 
   const draw = (): void => {
     root.innerHTML = '';
@@ -42,9 +60,7 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
       dealerZone.append(renderHand(round.dealer, { label: 'Dealer', hiddenSecond: round.dealerHidden }));
       playerZone.style.setProperty('--hand-count', String(Math.max(1, Math.min(4, round.hands.length))));
       round.hands.forEach((h, idx) => playerZone.append(renderHand(h.cards, { label: `Player ${idx + 1}`, active: idx === round.currentHand, bet: h.bet })));
-      const totalActiveBet = round.hands.reduce((sum, hand) => sum + hand.bet, 0);
-      bettingCircle.innerHTML = `<span>BET</span><strong>${totalActiveBet}</strong>`;
-      felt.append(dealerZone, tableMarkings, playerZone, bettingCircle);
+      felt.append(dealerZone, tableMarkings, playerZone);
       table.append(felt);
       root.append(settings, purseWrap, table);
 
@@ -73,23 +89,32 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
         const delta = state.lastPayout?.delta ?? 0;
         const hasNaturalBlackjack = round.hands.some((h) => h.cards.length === 2 && isBlackjack(h.cards) && !h.fromSplit);
         const label = hasNaturalBlackjack && delta > 0 ? `Blackjack! You won ${delta}` : delta > 0 ? `You won ${delta}` : delta < 0 ? `You lost ${Math.abs(delta)}` : 'Push — bet returned';
-        overlay.innerHTML = `<div class="round-overlay__panel"><h3>Round complete</h3><p>${label}</p></div>`;
-        const next = document.createElement('button');
-        next.className = 'btn btn--primary next-round-overlay page-primary-cta';
-        next.innerHTML = 'Next Round <span class="next-round-overlay__arrow">⟶</span>';
-        next.addEventListener('click', () => { state.round = null; state.lastPayout = null; state.awaitingNextRound = false; draw(); });
-        const dock = document.createElement('div'); dock.className = 'bottom-control-dock'; dock.append(next);
-        root.append(overlay, dock);
+        const dealerNaturalBlackjack = round.dealer.length === 2 && isBlackjack(round.dealer);
+        const heading = hasNaturalBlackjack && !dealerNaturalBlackjack && delta > 0 ? 'BLACKJACK!' : 'Round complete';
+        overlay.innerHTML = `<div class="round-overlay__panel ${heading === 'BLACKJACK!' ? 'round-overlay__panel--blackjack' : ''}"><h3>${heading}</h3><p>${label}</p></div>`;
+        root.append(overlay);
 
-        const playerOnly21 = round.hands.some((h) => handTotals(h.cards).total === 21) && handTotals(round.dealer).total !== 21;
-        if (playerOnly21) {
-          const bj = document.createElement('div');
-          bj.className = 'blackjack-overlay';
-          bj.innerHTML = '<div class="blackjack-overlay__confetti"></div><div class="blackjack-overlay__text">BLACKJACK!</div>';
-          root.append(bj);
+        const playerNaturalBlackjack = round.hands.some((h) => h.cards.length === 2 && isBlackjack(h.cards) && !h.fromSplit);
+        if (playerNaturalBlackjack && !dealerNaturalBlackjack && delta > 0) {
+          const confetti = document.createElement('div');
+          confetti.className = 'confetti-burst';
+          confetti.innerHTML = Array.from({ length: 24 }).map((_, idx) => `<span class="confetti-piece confetti-piece--${idx % 6}"></span>`).join('');
+          root.append(confetti);
         }
+
+        const roundResultKey = `${delta}:${label}:${round.bankroll}`;
+        if (activeRoundResultKey !== roundResultKey) {
+          clearRoundResultTimeout();
+          activeRoundResultKey = roundResultKey;
+          roundResultTimeout = setTimeout(() => dismissRoundResult(), RESULT_OVERLAY_MS);
+        }
+      } else {
+        clearRoundResultTimeout();
+        activeRoundResultKey = null;
       }
     } else {
+      clearRoundResultTimeout();
+      activeRoundResultKey = null;
       bettingCircle.innerHTML = `<span>BET</span><strong>${state.currentBet || 0}</strong>`;
       felt.append(dealerZone, tableMarkings, playerZone, bettingCircle);
       table.append(felt);

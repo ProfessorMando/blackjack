@@ -6,21 +6,22 @@
 .table{display:grid;gap:24px}.hand__cards{display:flex;gap:8px}.card{width:72px;height:104px;border-radius:12px;background:var(--color-surface);padding:8px;position:relative}.card__corner--bottom{position:absolute;bottom:8px;right:8px;transform:rotate(180deg)}.card__pip{font-size:2rem;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);line-height:1}.is-red{color:var(--color-danger)}.is-black{color:var(--color-text-primary)}.card--back{background:repeating-linear-gradient(45deg,var(--color-table-felt),var(--color-table-felt) 6px,var(--color-table-felt-dark) 6px,var(--color-table-felt-dark) 12px);border:2px solid #ffffff66}
 .purse-wrap{position:fixed;top:16px;left:16px;z-index:260;display:grid;gap:8px}.purse{font-variant-numeric:tabular-nums;background:var(--color-surface-2);padding:12px 16px;border-radius:var(--radius-pill);display:flex;gap:12px;align-items:center}.purse__label{font-weight:600}.payout{font-size:.84rem;letter-spacing:.02em;font-weight:600;background:linear-gradient(180deg,#142432f0,#0f1b27f0);padding:7px 12px;border-radius:999px;border:1px solid #ffffff26;box-shadow:0 6px 14px #0000003d;transition:opacity 180ms ease,transform 180ms ease;transform:translateY(0)}.payout--positive{color:#7edda0;border-color:#50d47c55}.payout--negative{color:#f2a6a6;border-color:#f16a6a52}.payout--push{color:#d9dde3;border-color:#d9dde34a}
 .menu__actions{display:grid;gap:12px;justify-items:center}.menu__rules-btn{font-size:.8rem;color:#fff;border-color:#ffffff88;padding:6px 14px;justify-self:center}.modal-head{display:flex;justify-content:space-between;align-items:center;gap:16px}.rules-content{max-height:min(65vh,560px);overflow-y:auto;padding-right:8px;display:grid;gap:10px;text-align:left}.rules-content h3{margin:10px 0 2px}.rules-content p,.rules-content li{color:var(--color-text-secondary);line-height:1.5}.rules-content ul,.rules-content ol{margin:0;padding-left:20px}
-.blackjack-page{position:relative;min-height:100vh;padding:20px 16px calc(132px + env(safe-area-inset-bottom));display:grid;justify-items:center;align-content:start;gap:20px;background:radial-gradient(circle at top,#113724 0%,#071d14 70%)}
+.blackjack-page{position:relative;min-height:100vh;padding:24px 16px calc(112px + env(safe-area-inset-bottom));display:grid;justify-items:center;align-content:start;gap:16px;background:radial-gradient(circle at top,#113724 0%,#071d14 70%)}
 .blackjack-table{width:min(1200px,96vw);max-width:1200px;aspect-ratio:16/9.1;background:linear-gradient(160deg,#3f2a1d,#1d130c);padding:clamp(16px,2.2vw,30px);border-radius:44% 44% 52% 52% / 14% 14% 62% 62%;box-shadow:0 18px 40px #00000066,inset 0 0 0 2px #6b4a31;display:grid}
-.table-felt{position:relative;overflow:hidden;padding:clamp(20px,3.2vw,40px);border-radius:42% 42% 50% 50% / 12% 12% 60% 60%;background:radial-gradient(circle at 50% 22%,#1f6946 0%,#155638 52%,#0d3c28 100%);box-shadow:inset 0 0 0 2px #ffffff1a,inset 0 -30px 36px #00000040;display:grid;grid-template-rows:1fr auto 1fr;align-items:center}
+.table-felt{--card-gap:14px;--zone-gap:clamp(24px,4vh,44px);--hand-gap:clamp(18px,2.6vw,30px);--table-padding:clamp(22px,3.6vw,46px);position:relative;overflow:hidden;padding:var(--table-padding);border-radius:42% 42% 50% 50% / 12% 12% 60% 60%;background:radial-gradient(circle at 50% 22%,#1f6946 0%,#155638 52%,#0d3c28 100%);box-shadow:inset 0 0 0 2px #ffffff1a,inset 0 -30px 36px #00000040;display:grid;grid-template-rows:1fr auto 1fr;align-items:center}
 .table-felt::before{content:'';position:absolute;inset:6% 8% 14%;border:2px solid #d3e5d17a;border-radius:46% 46% 56% 56% / 12% 12% 64% 64%;pointer-events:none}
-.dealer-area,.player-area{position:relative;z-index:2;display:flex;justify-content:center;align-items:center;gap:14px}
-.dealer-area{align-self:start;padding-top:1%}
-.player-area{align-self:end;padding-bottom:21%;--hand-count:1}
+.dealer-area,.player-area{position:relative;z-index:2;display:flex;justify-content:center;align-items:center;gap:var(--hand-gap)}
+.dealer-area{align-self:start;padding-top:1%;padding-bottom:var(--zone-gap)}
+.player-area{align-self:end;padding-top:var(--zone-gap);padding-bottom:17%;--hand-count:1}
 .player-area .hand{transform:translateX(calc((var(--hand-count) - 1) * -10px))}
 .hand{background:transparent;border:none;padding:0;text-align:center;color:#f2f5f2;text-shadow:0 1px 2px #00000066}
 .hand header h3{margin:0;font-size:clamp(.95rem,1.6vw,1.1rem);font-weight:600}
-.hand__score{margin:4px 0 8px;font-weight:700}
+.hand__score{margin:6px 0 12px;font-weight:700}
 .hand__cards{justify-content:center}
+.hand .hand__cards{gap:var(--card-gap)}
 .hand--active{filter:drop-shadow(0 0 10px rgba(var(--accent-rgb),.45))}
 .card{box-shadow:0 10px 18px #00000066}
-.table-markings{position:relative;z-index:1;align-self:center;justify-self:center;width:min(78%,680px);height:34%;opacity:.65}
+.table-markings{position:relative;z-index:1;align-self:center;justify-self:center;width:min(78%,680px);height:29%;opacity:.6}
 .table-markings::before,.table-markings::after{content:"";position:absolute;left:50%;transform:translateX(-50%);border:2px solid #d3e5d17a;border-radius:999px}
 .table-markings::before{width:100%;height:100%;bottom:0;clip-path:inset(50% 0 0 0)}
 .table-markings::after{width:58%;height:42%;bottom:-18%}
@@ -42,11 +43,16 @@
 .chip-stack{border:1px solid #ffffff52;background:#112739d1;color:#fff;border-radius:999px;padding:6px 12px;display:flex;align-items:center;gap:8px;cursor:pointer}
 .chip-stack__count{opacity:.78;font-size:.85rem}
 .betting__selected{margin:0;font-weight:700}
-@media (max-width: 700px){.blackjack-page{padding:16px 10px calc(148px + env(safe-area-inset-bottom))}.blackjack-table{width:min(98vw,760px);aspect-ratio:7/6}.table-felt{grid-template-rows:auto auto 1fr;padding:16px}.dealer-area{padding-top:0}.player-area{padding-bottom:26%}.betting-circle{bottom:8%}.controls--bottom{width:min(96vw,560px)}}
+@media (max-width: 700px){.blackjack-page{padding:16px 10px calc(132px + env(safe-area-inset-bottom))}.blackjack-table{width:min(98vw,760px);aspect-ratio:7/6}.table-felt{--card-gap:10px;--zone-gap:20px;--hand-gap:12px;grid-template-rows:auto auto 1fr;padding:16px}.dealer-area{padding-top:0}.player-area{padding-bottom:22%}.betting-circle{bottom:8%}.controls--bottom{width:min(96vw,560px)}}
 .round-overlay{position:fixed;inset:0;display:grid;place-items:center;z-index:140;pointer-events:none;opacity:0;transition:opacity 220ms ease;background:rgba(0,0,0,.2)}.round-overlay.is-visible{opacity:1}.round-overlay__panel{background:rgba(10,18,24,.94);color:#fff;padding:18px 24px;border-radius:14px;border:1px solid #ffffff3a;box-shadow:0 16px 34px #00000066;backdrop-filter:blur(3px);text-align:center;transform:translateY(-42px)}
-.blackjack-overlay{position:fixed;inset:0;pointer-events:none;display:grid;place-items:center;z-index:180}.blackjack-overlay__text{font-size:3rem;font-weight:800;color:#ffe082;text-shadow:0 0 20px #000}
-.blackjack-overlay__confetti{position:absolute;inset:0;background:repeating-linear-gradient(120deg,#ff5252 0 8px,#ffd54f 8px 16px,#66bb6a 16px 24px,#42a5f5 24px 32px);opacity:.2;animation:fall 1.2s linear infinite}
-@keyframes fall{from{transform:translateY(-20px)}to{transform:translateY(20px)}}
+.round-overlay__panel--blackjack h3{font-size:2rem;letter-spacing:.06em;color:#ffe082;text-shadow:0 0 14px #000}
+.confetti-burst{position:fixed;inset:0;pointer-events:none;z-index:175;overflow:hidden}
+.confetti-piece{position:absolute;top:-10%;width:8px;height:14px;border-radius:2px;opacity:.95;animation:confetti-fall 2s ease-out forwards}
+.confetti-piece:nth-child(odd){left:12%;animation-delay:calc(var(--i, 0) * 20ms)}
+.confetti-piece:nth-child(even){left:82%;animation-delay:calc(var(--i, 0) * 20ms)}
+.confetti-piece--0{background:#ffd54f}.confetti-piece--1{background:#66bb6a}.confetti-piece--2{background:#42a5f5}.confetti-piece--3{background:#ef5350}.confetti-piece--4{background:#ab47bc}.confetti-piece--5{background:#ffee58}
+.confetti-piece:nth-child(3n){left:18%}.confetti-piece:nth-child(4n){left:74%}.confetti-piece:nth-child(5n){left:30%}.confetti-piece:nth-child(6n){left:64%}
+@keyframes confetti-fall{0%{transform:translateY(-10vh) rotate(0deg)}100%{transform:translateY(70vh) rotate(460deg);opacity:0}}
 
 .active-bet{margin-top:10px;display:inline-flex;gap:8px;align-items:center;background:#0f1a27cc;border:1px solid #ffffff36;border-radius:999px;padding:5px 12px;font-size:.85rem;font-weight:700}
 .active-bet span{opacity:.8;text-transform:uppercase;letter-spacing:.08em;font-size:.7rem}

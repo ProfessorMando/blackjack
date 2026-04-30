@@ -35,6 +35,9 @@ describe('blackjack engine bankroll and flow', () => {
     const round = dealInitial(createRound(100, 10, undefined, shoeWith([c('A'), c('9'), c('K'), c('7')])));
     expect(round.phase).toBe('round-over');
     expect(round.bankroll).toBe(115);
+    expect(round.dealerHidden).toBe(false);
+    expect(round.dealer).toHaveLength(2);
+    expect(round.shoe.dealt).toBe(4);
   });
 
   it('dealer natural blackjack settles immediately', () => {
@@ -47,6 +50,17 @@ describe('blackjack engine bankroll and flow', () => {
     const round = dealInitial(createRound(100, 10, undefined, shoeWith([c('A'), c('A'), c('K'), c('K')])));
     expect(round.phase).toBe('round-over');
     expect(round.bankroll).toBe(100);
+  });
+
+  it('natural blackjack beats non-natural 21', () => {
+    const end = settle({
+      ...createRound(100, 10),
+      dealer: [c('7'), c('7'), c('7')],
+      dealerHidden: false,
+      hands: [{ cards: [c('A'), c('K')], bet: 10 }],
+      phase: 'settlement'
+    });
+    expect(end.bankroll).toBe(115);
   });
 
   it('double draws one card, marks complete, uses doubled bet', () => {
