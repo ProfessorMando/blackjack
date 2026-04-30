@@ -9,13 +9,15 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "worker:dev": "wrangler dev",
-    "worker:deploy": "wrangler deploy"
+    "worker:deploy": "wrangler deploy",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260430.1",
     "@types/node": "^25.6.0",
     "typescript": "^5.6.3",
     "vite": "^5.4.10",
-    "wrangler": "^3.86.1"
+    "wrangler": "^3.86.1",
+    "vitest": "^2.1.3"
   }
 }
