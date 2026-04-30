@@ -51,14 +51,19 @@ export function saveBankroll(amount: number): void {
 
 export function createAppState(config: SoloConfig): AppState {
   localStorage.setItem(STORAGE_KEYS.startingCash, String(config.startingCash));
-  const bankroll = Math.max(config.startingCash, config.bet);
+  const bankroll = config.startingCash;
+  const initialBet = Math.max(1, Math.min(config.bet, bankroll));
   saveBankroll(bankroll);
-  return { round: null, bankroll, minBet: 1, currentBet: config.bet, selectedChips: [config.bet], lastPayout: null, role: config.role, difficulty: config.difficulty, awaitingNextRound: false, roundStartBankroll: bankroll, hasStartedRound: false };
+  return { round: null, bankroll, minBet: 1, currentBet: initialBet, selectedChips: [initialBet], lastPayout: null, role: config.role, difficulty: config.difficulty, awaitingNextRound: false, roundStartBankroll: bankroll, hasStartedRound: false };
 }
 
 export function startRound(state: AppState, bet: number): AppState {
-  const round = dealInitial(createRound(state.bankroll, bet));
-  return { ...state, bankroll: round.bankroll, round, currentBet: bet, lastPayout: null, roundStartBankroll: state.bankroll, hasStartedRound: true };
+  const bankrollBeforeRound = state.bankroll;
+  const round = dealInitial(createRound(bankrollBeforeRound, bet));
+  saveBankroll(round.bankroll);
+  const delta = round.phase === 'round-over' ? round.bankroll - bankrollBeforeRound : 0;
+  const label = delta > 0 ? 'win' : delta < 0 ? 'loss' : 'push';
+  return { ...state, bankroll: round.bankroll, round, currentBet: bet, lastPayout: round.phase === 'round-over' ? { label, delta } : null, roundStartBankroll: bankrollBeforeRound, hasStartedRound: true };
 }
 
 export function applyPlayerAction(state: AppState, action: PlayerAction): AppState {

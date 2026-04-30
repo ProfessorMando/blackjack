@@ -6,7 +6,7 @@ const CHIP_TEXT = ['#1a1a1a', '#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffff
 export function renderPurse(amount: number): HTMLElement {
   const el = document.createElement('div');
   el.className = 'purse';
-  el.innerHTML = `<span class="purse__label">👛 Purse</span><strong>${amount}</strong>`;
+  el.innerHTML = `<span class="purse__label">👛 Wallet</span><strong>${amount}</strong>`;
   return el;
 }
 
@@ -76,4 +76,12 @@ export function renderBetChips(bankroll: number, selectedChips: number[], onSele
 
   wrap.append(row, center, total);
   return wrap;
+}
+
+
+export function renderActiveBet(amount: number): HTMLElement {
+  const el = document.createElement('div');
+  el.className = 'active-bet';
+  el.innerHTML = `<span>Bet</span><strong>${amount}</strong>`;
+  return el;
 }

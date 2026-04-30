@@ -20,8 +20,8 @@ function openTable(startingCash: number): void {
     bet: 10,
     difficulty: 'casual'
   });
-  app.innerHTML = '';
-  app.append(renderGameBoard(state, () => window.location.reload()));
+  app!.innerHTML = '';
+  app!.append(renderGameBoard(state, () => window.location.reload()));
 }
 
 function openStartAmountPrompt(): void {
