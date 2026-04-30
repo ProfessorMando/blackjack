@@ -1,3 +1,4 @@
+import { handTotals, isBlackjack, isPair } from '../game/deck';
 import { legalActions } from '../game/engine';
 import { applyPlayerAction, startRound, type AppState } from '../game/state';
 import { renderControls, type ControlAction } from './Controls';
@@ -30,8 +31,13 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
       playerZone.style.setProperty('--hand-count', String(Math.max(1, Math.min(4, round.hands.length))));
       round.hands.forEach((h, idx) => playerZone.append(renderHand(h.cards, { label: `Player ${idx + 1}`, active: idx === round.currentHand })));
       const legal = round.phase === 'player' ? legalActions(round) : [];
+      const playerHasNatural = round.hands.some((h) => isBlackjack(h.cards) || handTotals(h.cards).total === 21);
       const enabled = {
-        deal: false, hit: legal.includes('hit'), stand: legal.includes('stand'), double: legal.includes('double'), split: legal.includes('split'), surrender: legal.includes('surrender')
+        hit: legal.includes('hit') && !playerHasNatural,
+        stand: legal.includes('stand') && !playerHasNatural,
+        double: legal.includes('double') && round.hands[round.currentHand]?.cards.length === 2,
+        split: legal.includes('split') && isPair(round.hands[round.currentHand]?.cards ?? []),
+        surrender: legal.includes('surrender')
       };
       const purseWrap = document.createElement('div');
       purseWrap.className = 'purse-wrap';
@@ -39,44 +45,72 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
       const payout = renderPayout(state.lastPayout);
       if (payout) purseWrap.append(payout);
       root.append(dealerZone, playerZone, purseWrap);
-      if (round.phase === 'player') {
+      if (round.phase === 'player' && !playerHasNatural) {
         const controls = renderControls((action: ControlAction) => {
           Object.assign(state, applyPlayerAction(state, action as any));
           draw();
         }, enabled);
         root.append(controls);
       }
+      if (playerHasNatural && round.phase === 'player') {
+        Object.assign(state, applyPlayerAction(state, 'stand'));
+        draw();
+        return;
+      }
       if (round.phase === 'round-over' && state.bankroll >= 1) {
         state.awaitingNextRound = true;
+        const overlay = document.createElement('div');
+        overlay.className = 'round-overlay';
+        const delta = state.lastPayout?.delta ?? 0;
+        const label = delta > 0 ? `You won ${delta}` : delta < 0 ? `You lost ${Math.abs(delta)}` : 'Push';
+        overlay.innerHTML = `<div class="round-overlay__panel"><h3>Round complete</h3><p>${label}</p></div>`;
         const next = document.createElement('button');
         next.className = 'btn btn--primary next-round-overlay';
         next.innerHTML = 'Next Round <span class="next-round-overlay__arrow">⟶</span>';
-        next.addEventListener('click', () => {
-          state.round = null;
-          state.lastPayout = null;
-          state.awaitingNextRound = false;
-          draw();
-        });
-        root.append(next);
+        next.addEventListener('click', () => { state.round = null; state.lastPayout = null; state.awaitingNextRound = false; draw(); });
+        root.append(overlay, next);
+
+        const playerOnlyBlackjack = round.hands.some((h) => isBlackjack(h.cards)) && !isBlackjack(round.dealer);
+        if (playerOnlyBlackjack) {
+          const bj = document.createElement('div');
+          bj.className = 'blackjack-overlay';
+          bj.innerHTML = '<div class="blackjack-overlay__confetti"></div><div class="blackjack-overlay__text">BLACKJACK!</div>';
+          root.append(bj);
+        }
       }
     } else {
       root.append(renderBetChips(state.bankroll, state.selectedChips, (chips) => {
         state.selectedChips = chips;
         state.currentBet = chips.reduce((sum, chip) => sum + chip, 0);
         draw();
-      }, () => {
+      }));
+      const next = document.createElement('button');
+      next.className = 'btn btn--primary next-round-overlay';
+      next.textContent = 'Next Round';
+      next.disabled = state.selectedChips.length === 0 || state.currentBet > state.bankroll;
+      next.addEventListener('click', () => {
         const betTotal = state.selectedChips.reduce((sum, chip) => sum + chip, 0);
         if (state.selectedChips.length === 0 || betTotal <= 0 || betTotal > state.bankroll) return;
         state.currentBet = betTotal;
         Object.assign(state, startRound(state, betTotal));
         draw();
-      }));
+      });
       const purseWrap = document.createElement('div');
       purseWrap.className = 'purse-wrap';
       purseWrap.append(renderPurse(state.bankroll));
-      const payout = renderPayout(state.lastPayout);
-      if (payout) purseWrap.append(payout);
-      root.append(dealerZone, playerZone, purseWrap);
+      root.append(dealerZone, playerZone, purseWrap, next);
+    }
+
+    const nextRoundButton = root.querySelector('.next-round-overlay') as HTMLButtonElement | null;
+    if (nextRoundButton) {
+      window.onkeydown = (event: KeyboardEvent) => {
+        if ((event.key === 'Enter' || event.key === ' ') && !nextRoundButton.disabled) {
+          event.preventDefault();
+          nextRoundButton.click();
+        }
+      };
+    } else {
+      window.onkeydown = null;
     }
   };
   draw();

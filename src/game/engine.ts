@@ -1,4 +1,4 @@
-import { Card, ShoeState, classifyHand, createShoe, drawCard, handTotals, isBlackjack, isPair } from './deck';
+import { Card, ShoeState, createShoe, drawCard, handTotals, isBlackjack, isPair } from './deck';
 
 export type PlayerAction = 'hit' | 'stand' | 'double' | 'split' | 'surrender' | 'insurance';
 export type Phase = 'betting'|'dealing'|'insurance'|'player'|'dealer'|'settlement'|'round-over';
@@ -18,13 +18,20 @@ export function dealInitial(state: RoundState): RoundState {
     let card; [card, next.shoe] = drawCard(next.shoe); next.hands[0].cards = [...next.hands[0].cards, card];
     [card, next.shoe] = drawCard(next.shoe); next.dealer = [...next.dealer, card];
   }
-  // Insurance flow is not implemented in the UI; always continue to player actions.
+  const playerBlackjack = isBlackjack(next.hands[0].cards);
+  if (playerBlackjack) {
+    next.phase = 'settlement';
+    next.dealerHidden = false;
+    return settle(next);
+  }
   next.phase = 'player';
   return next;
 }
 
 export function legalActions(state: RoundState): PlayerAction[] {
   const h = state.hands[state.currentHand]; if (!h || state.phase !== 'player') return [];
+  const total = handTotals(h.cards).total;
+  if (total >= 21) return [];
   const acts: PlayerAction[] = ['hit','stand'];
   if (h.cards.length===2 && !h.doubled && state.bankroll >= h.bet) acts.push('double');
   if (h.cards.length===2 && isPair(h.cards) && state.hands.length < DEFAULT_RULES.maxHands && state.bankroll >= h.bet && !(h.cards[0].rank==='A' && h.splitAces)) acts.push('split');
@@ -35,7 +42,7 @@ export function legalActions(state: RoundState): PlayerAction[] {
 export function applyAction(state: RoundState, action: PlayerAction): RoundState {
   let next = { ...state, hands: state.hands.map((h)=>({...h,cards:[...h.cards]})), dealer:[...state.dealer] };
   const h = next.hands[next.currentHand];
-  if (action==='hit' || action==='double') { let c; [c,next.shoe]=drawCard(next.shoe); h.cards.push(c); if (action==='double'){h.bet*=2; next.bankroll -= h.bet/2; h.doubled=true; h.stood=true;} if (handTotals(h.cards).total>21) h.busted=true; }
+  if (action==='hit' || action==='double') { let c; [c,next.shoe]=drawCard(next.shoe); h.cards.push(c); if (action==='double'){h.bet*=2; next.bankroll -= h.bet/2; h.doubled=true; h.stood=true;} const total = handTotals(h.cards).total; if (total>21) h.busted=true; if (total===21) h.stood=true; }
   if (action==='stand') h.stood=true;
   if (action==='surrender') { h.surrendered=true; h.stood=true; }
   if (action==='split') { const [a,b]=h.cards; let c1,c2; [c1,next.shoe]=drawCard(next.shoe); [c2,next.shoe]=drawCard(next.shoe); h.cards=[a,c1]; const splitHand: PlayerHand={cards:[b,c2],bet:h.bet,splitAces:a.rank==='A'}; next.hands.splice(next.currentHand+1,0,splitHand); next.bankroll -= h.bet; }

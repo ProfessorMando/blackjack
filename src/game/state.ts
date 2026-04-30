@@ -28,6 +28,7 @@ export interface AppState {
   role: SoloRole;
   difficulty: Difficulty;
   awaitingNextRound: boolean;
+  roundStartBankroll: number;
 }
 
 export const STORAGE_KEYS = {
@@ -51,17 +52,17 @@ export function createAppState(config: SoloConfig): AppState {
   localStorage.setItem(STORAGE_KEYS.startingCash, String(config.startingCash));
   const bankroll = Math.max(config.startingCash, config.bet);
   saveBankroll(bankroll);
-  return { round: null, bankroll, minBet: 1, currentBet: config.bet, selectedChips: [config.bet], lastPayout: null, role: config.role, difficulty: config.difficulty, awaitingNextRound: false };
+  return { round: null, bankroll, minBet: 1, currentBet: config.bet, selectedChips: [config.bet], lastPayout: null, role: config.role, difficulty: config.difficulty, awaitingNextRound: false, roundStartBankroll: bankroll };
 }
 
 export function startRound(state: AppState, bet: number): AppState {
   const round = dealInitial(createRound(state.bankroll, bet));
-  return { ...state, bankroll: round.bankroll, round, currentBet: bet, lastPayout: null };
+  return { ...state, bankroll: round.bankroll, round, currentBet: bet, lastPayout: null, roundStartBankroll: state.bankroll };
 }
 
 export function applyPlayerAction(state: AppState, action: PlayerAction): AppState {
   if (!state.round) return state;
-  const before = state.bankroll;
+  const before = state.roundStartBankroll;
   let round = applyAction(state.round, action);
   if (round.phase === 'dealer') round = playDealer(round);
   saveBankroll(round.bankroll);
