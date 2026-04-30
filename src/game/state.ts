@@ -27,7 +27,6 @@ export interface AppState {
 }
 
 export const STORAGE_KEYS = {
-  theme: 'blackjack.theme',
   bankroll: 'blackjack.bankroll',
   startingCash: 'blackjack.startingCash'
 } as const;

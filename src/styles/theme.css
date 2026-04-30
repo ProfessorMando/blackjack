@@ -22,11 +22,3 @@
   --radius-pill: 999px;
   --transition: 180ms ease;
 }
-:root[data-theme='dark'] {
-  --color-bg: #081b12;
-  --color-surface: #132234;
-  --color-surface-2: #1b2f46;
-  --color-border: #30475f;
-  --color-text-primary: #eaf3ff;
-  --color-text-secondary: #b6c7da;
-}
