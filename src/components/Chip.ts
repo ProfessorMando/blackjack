@@ -10,13 +10,10 @@ export function renderPurse(amount: number): HTMLElement {
   return el;
 }
 
-export function renderPayout(status: { label: string; delta: number } | null): HTMLElement {
+export function renderPayout(status: { label: string; delta: number } | null): HTMLElement | null {
+  if (!status) return null;
   const el = document.createElement('div');
   el.className = 'payout';
-  if (!status) {
-    el.textContent = 'Payout: --';
-    return el;
-  }
   const sign = status.delta > 0 ? '+' : status.delta < 0 ? '-' : '';
   el.classList.add(status.delta > 0 ? 'payout--positive' : status.delta < 0 ? 'payout--negative' : 'payout--push');
   el.textContent = `${status.label} ${sign}${Math.abs(status.delta)}`;
@@ -55,10 +52,10 @@ export function renderBetChips(bankroll: number, selectedChips: number[], onSele
   Object.entries(grouped).forEach(([value, count]) => {
     const stack = document.createElement('button');
     const idx = CHIP_VALUES.indexOf(Number(value) as (typeof CHIP_VALUES)[number]);
-    stack.className = 'chip-stack';
+    stack.className = `chip-stack${count > 2 ? ' chip-stack--stacked' : ''}`;
     stack.style.setProperty('--chip-color', CHIP_COLORS[idx]);
     stack.style.setProperty('--chip-text', CHIP_TEXT[idx]);
-    stack.innerHTML = `<span class="chip-stack__count">x${count}</span><span class="chip-stack__value">${value}</span>`;
+    stack.innerHTML = `<span class="chip-stack__value">${value}</span><span class="chip-stack__count">x${count}</span>`;
     stack.addEventListener('click', () => {
       const removeValue = Number(value);
       const removeIndex = selectedChips.findIndex((chip) => chip === removeValue);

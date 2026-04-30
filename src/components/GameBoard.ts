@@ -35,7 +35,9 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
       };
       const purseWrap = document.createElement('div');
       purseWrap.className = 'purse-wrap';
-      purseWrap.append(renderPurse(state.bankroll), renderPayout(state.lastPayout));
+      purseWrap.append(renderPurse(state.bankroll));
+      const payout = renderPayout(state.lastPayout);
+      if (payout) purseWrap.append(payout);
       root.append(dealerZone, playerZone, purseWrap);
       if (round.phase === 'player') {
         const controls = renderControls((action: ControlAction) => {
@@ -63,12 +65,17 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
         state.currentBet = chips.reduce((sum, chip) => sum + chip, 0);
         draw();
       }, () => {
-        Object.assign(state, startRound(state, state.currentBet));
+        const betTotal = state.selectedChips.reduce((sum, chip) => sum + chip, 0);
+        if (state.selectedChips.length === 0 || betTotal <= 0 || betTotal > state.bankroll) return;
+        state.currentBet = betTotal;
+        Object.assign(state, startRound(state, betTotal));
         draw();
       }));
       const purseWrap = document.createElement('div');
       purseWrap.className = 'purse-wrap';
-      purseWrap.append(renderPurse(state.bankroll), renderPayout(state.lastPayout));
+      purseWrap.append(renderPurse(state.bankroll));
+      const payout = renderPayout(state.lastPayout);
+      if (payout) purseWrap.append(payout);
       root.append(dealerZone, playerZone, purseWrap);
     }
   };
