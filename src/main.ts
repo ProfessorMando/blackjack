@@ -1,7 +1,6 @@
 import './styles/theme.css';
 import './styles/base.css';
 import './styles/components.css';
-import { initThemeToggle } from './components/ThemeToggle';
 import { createModal } from './components/Modal';
 import { renderGameBoard } from './components/GameBoard';
 import { renderLobby } from './online/lobby';
@@ -36,7 +35,7 @@ menu.addEventListener('click', (event) => {
   }
 });
 
-app.append(menu, initThemeToggle());
+app.append(menu);
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => undefined);
