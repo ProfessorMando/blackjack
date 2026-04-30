@@ -3,7 +3,7 @@ import { Card, ShoeState, classifyHand, createShoe, drawCard, handTotals, isBlac
 export type PlayerAction = 'hit' | 'stand' | 'double' | 'split' | 'surrender' | 'insurance';
 export type Phase = 'betting'|'dealing'|'insurance'|'player'|'dealer'|'settlement'|'round-over';
 export interface RulesConfig { decks:number; blackjackPayout:number; dealerHitsSoft17:boolean; minBet:number; maxHands:number; allowLateSurrender:boolean; }
-export const DEFAULT_RULES: RulesConfig = { decks: 6, blackjackPayout: 1.5, dealerHitsSoft17: true, minBet: 10, maxHands: 4, allowLateSurrender: true };
+export const DEFAULT_RULES: RulesConfig = { decks: 6, blackjackPayout: 1.5, dealerHitsSoft17: true, minBet: 1, maxHands: 4, allowLateSurrender: true };
 export interface PlayerHand { cards: Card[]; bet: number; stood?: boolean; busted?: boolean; surrendered?: boolean; doubled?: boolean; splitAces?: boolean; insuranceBet?: number; settled?: number; }
 export interface RoundState { bankroll:number; bet:number; shoe:ShoeState; dealer:Card[]; dealerHidden:boolean; hands:PlayerHand[]; currentHand:number; phase:Phase; message:string; dealerBlackjackChecked:boolean; }
 
