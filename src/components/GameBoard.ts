@@ -12,6 +12,10 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
   let roundSummaryTimer: number | null = null;
 
   const draw = (): void => {
+    const getPrimaryCtaLabel = (): string => {
+      if (!state.hasStartedRound) return 'Start Round';
+      return state.awaitingNextRound ? 'Next Round' : 'Deal';
+    };
     root.innerHTML = '';
     const settings = document.createElement('div');
     settings.className = 'table-menu';
@@ -54,7 +58,10 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
       const purseWrap = document.createElement('div');
       purseWrap.className = 'purse-wrap';
       purseWrap.append(renderPurse(state.bankroll));
-      const payout = renderPayout(state.lastPayout);
+      const payout = renderPayout(state.lastPayout ? {
+        ...state.lastPayout,
+        label: state.lastPayout.label === 'win' ? `Won +${state.lastPayout.delta}` : state.lastPayout.label === 'loss' ? `Lost ${state.lastPayout.delta}` : 'Push'
+      } : null);
       if (payout) purseWrap.append(payout);
       felt.append(dealerZone, tableMarkings, playerZone, bettingCircle);
       table.append(felt);
@@ -125,7 +132,7 @@ export function renderGameBoard(state: AppState, onQuit: () => void): HTMLElemen
       }));
       const next = document.createElement('button');
       next.className = 'btn btn--primary next-round-overlay page-primary-cta';
-      next.textContent = 'Deal';
+      next.textContent = getPrimaryCtaLabel();
       next.disabled = state.selectedChips.length === 0 || state.currentBet > state.bankroll;
       next.addEventListener('click', () => {
         const betTotal = state.selectedChips.reduce((sum, chip) => sum + chip, 0);
